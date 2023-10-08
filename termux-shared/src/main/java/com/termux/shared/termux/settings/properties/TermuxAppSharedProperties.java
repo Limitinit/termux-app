@@ -11,7 +11,7 @@ public class TermuxAppSharedProperties extends TermuxSharedProperties {
     private static TermuxAppSharedProperties properties;
 
 
-    private TermuxAppSharedProperties(@NonNull Context context) {
+    public TermuxAppSharedProperties(@NonNull Context context) {
         super(context, TermuxConstants.TERMUX_APP_NAME,
             TermuxConstants.TERMUX_PROPERTIES_FILE_PATHS_LIST, TermuxPropertyConstants.TERMUX_APP_PROPERTIES_LIST,
             new TermuxSharedProperties.SharedPropertiesParserClient());

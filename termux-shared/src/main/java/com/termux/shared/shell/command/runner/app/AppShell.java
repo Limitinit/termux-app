@@ -20,6 +20,7 @@ import com.termux.shared.shell.command.ExecutionCommand.ExecutionState;
 import com.termux.shared.shell.command.environment.IShellEnvironment;
 import com.termux.shared.shell.ShellUtils;
 import com.termux.shared.shell.StreamGobbler;
+import com.termux.shared.termux.TermuxConstants;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -88,7 +89,7 @@ public final class AppShell {
         }
 
         if (executionCommand.workingDirectory == null || executionCommand.workingDirectory.isEmpty())
-            executionCommand.workingDirectory = shellEnvironmentClient.getDefaultWorkingDirectoryPath();
+            executionCommand.workingDirectory = TermuxConstants.TERMUX_HOME_DIR_PATH;
         if (executionCommand.workingDirectory.isEmpty())
             executionCommand.workingDirectory = "/";
 
@@ -118,12 +119,6 @@ public final class AppShell {
             AppShell.processAppShellResult(null, executionCommand);
             return null;
         }
-
-        // No need to log stdin if logging is disabled, like for app internal scripts
-        Logger.logDebugExtended(LOG_TAG, ExecutionCommand.getExecutionInputLogString(executionCommand,
-            true, Logger.shouldEnableLoggingForCustomLogLevel(executionCommand.backgroundCustomLogLevel)));
-        Logger.logVerboseExtended(LOG_TAG, "\"" + executionCommand.getCommandIdAndLabelLogString() + "\" AppShell Environment:\n" +
-            Joiner.on("\n").join(environmentArray));
 
         // Exec the process
         final Process process;
@@ -332,8 +327,6 @@ public final class AppShell {
     public ExecutionCommand getExecutionCommand() {
         return mExecutionCommand;
     }
-
-
 
     public interface AppShellClient {
 

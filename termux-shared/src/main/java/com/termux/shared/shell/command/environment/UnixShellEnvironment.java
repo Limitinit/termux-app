@@ -63,10 +63,6 @@ public abstract class UnixShellEnvironment implements IShellEnvironment {
 
     @NonNull
     @Override
-    public abstract String getDefaultWorkingDirectoryPath();
-
-    @NonNull
-    @Override
     public abstract String getDefaultBinPath();
 
     @NonNull

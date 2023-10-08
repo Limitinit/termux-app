@@ -35,18 +35,6 @@ public class NotificationUtils {
     private static final String LOG_TAG = "NotificationUtils";
 
     /**
-     * Get the {@link NotificationManager}.
-     *
-     * @param context The {@link Context} for operations.
-     * @return Returns the {@link NotificationManager}.
-     */
-    @Nullable
-    public static NotificationManager getNotificationManager(final Context context) {
-        if (context == null) return null;
-        return (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-    }
-
-    /**
      * Get {@link Notification.Builder}.
      *
      * @param context The {@link Context} for operations.
@@ -83,26 +71,6 @@ public class NotificationUtils {
         builder = setNotificationDefaults(builder, notificationMode);
 
         return builder;
-    }
-
-    /**
-     * Setup the notification channel if Android version is greater than or equal to
-     * {@link Build.VERSION_CODES#O}.
-     *
-     * @param context The {@link Context} for operations.
-     * @param channelId The id of the channel. Must be unique per package.
-     * @param channelName The user visible name of the channel.
-     * @param importance The importance of the channel. This controls how interruptive notifications
-     *                   posted to this channel are.
-     */
-    public static void setupNotificationChannel(final Context context, final String channelId, final CharSequence channelName, final int importance) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
-        NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-
-        NotificationManager notificationManager = getNotificationManager(context);
-        if (notificationManager != null)
-            notificationManager.createNotificationChannel(channel);
     }
 
     public static Notification.Builder setNotificationDefaults(Notification.Builder builder, final int notificationMode) {

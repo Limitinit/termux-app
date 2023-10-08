@@ -437,86 +437,6 @@ public class PermissionUtils {
         return true;
     }
 
-
-
-
-
-    /**
-     * Check if {@link Manifest.permission#SYSTEM_ALERT_WINDOW} permission has been granted.
-     *
-     * @param context The context for operations.
-     * @return Returns {@code true} if permission is granted, otherwise {@code false}.
-     */
-    public static boolean checkDisplayOverOtherAppsPermission(@NonNull Context context) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M)
-            return Settings.canDrawOverlays(context);
-        else
-            return true;
-    }
-
-    /** Wrapper for {@link #requestDisplayOverOtherAppsPermission(Context, int)}. */
-    public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context) {
-        return requestDisplayOverOtherAppsPermission(context, -1);
-    }
-
-    /**
-     * Request user to grant {@link Manifest.permission#SYSTEM_ALERT_WINDOW} permission to the app.
-     *
-     * @param context The context for operations, like an {@link Activity} or {@link Service} context.
-     *                It must be an instance of {@link Activity} or {@link AppCompatActivity} if
-     *                result is required via the Activity#onActivityResult() callback and
-     *                {@code requestCode} is `>=0`.
-     * @param requestCode The request code to use while asking for permission. It must be `>=0` if
-     *                    result it required.
-     * @return Returns the {@code error} if requesting the permission was not successful, otherwise {@code null}.
-     */
-    public static Error requestDisplayOverOtherAppsPermission(@NonNull Context context, int requestCode) {
-        Logger.logInfo(LOG_TAG, "Requesting display over apps permission");
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-            return null;
-
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-        intent.setData(Uri.parse("package:" + context.getPackageName()));
-
-        // Flag must not be passed for activity contexts, otherwise onActivityResult() will not be called with permission grant result.
-        // Flag must be passed for non-activity contexts like services, otherwise "Calling startActivity() from outside of an Activity context requires the FLAG_ACTIVITY_NEW_TASK flag" exception will be raised.
-        if (!(context instanceof Activity))
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        if (requestCode >=0)
-            return ActivityUtils.startActivityForResult(context, requestCode, intent);
-        else
-            return ActivityUtils.startActivity(context, intent);
-    }
-
-    /**
-     * Check if running on sdk 29 (android 10) or higher and {@link Manifest.permission#SYSTEM_ALERT_WINDOW}
-     * permission has been granted or not.
-     *
-     * @param context The context for operations.
-     * @param logResults If it should be logged that permission has been granted or not.
-     * @return Returns {@code true} if permission is granted, otherwise {@code false}.
-     */
-    public static boolean validateDisplayOverOtherAppsPermissionForPostAndroid10(@NonNull Context context,
-                                                                                 boolean logResults) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
-
-        if (!checkDisplayOverOtherAppsPermission(context)) {
-            if (logResults)
-                Logger.logWarn(LOG_TAG, context.getPackageName() + " does not have Display over other apps (SYSTEM_ALERT_WINDOW) permission");
-            return false;
-        } else {
-            if (logResults)
-                Logger.logDebug(LOG_TAG, context.getPackageName() + " already has Display over other apps (SYSTEM_ALERT_WINDOW) permission");
-            return true;
-        }
-    }
-
-
-
-
-
     /**
      * Check if {@link Manifest.permission#REQUEST_IGNORE_BATTERY_OPTIMIZATIONS} permission has been
      * granted.
@@ -525,11 +445,8 @@ public class PermissionUtils {
      * @return Returns {@code true} if permission is granted, otherwise {@code false}.
      */
     public static boolean checkIfBatteryOptimizationsDisabled(@NonNull Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
-        } else
-            return true;
+        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        return powerManager.isIgnoringBatteryOptimizations(context.getPackageName());
     }
 
     /** Wrapper for {@link #requestDisableBatteryOptimizations(Context, int)}. */

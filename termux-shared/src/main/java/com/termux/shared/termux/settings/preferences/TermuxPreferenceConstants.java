@@ -104,13 +104,6 @@ public final class TermuxPreferenceConstants {
 
 
         /**
-         * Defines the key for whether the soft keyboard will be enabled, for cases where users want
-         * to use a hardware keyboard instead.
-         */
-        public static final String KEY_SOFT_KEYBOARD_ENABLED = "soft_keyboard_enabled";
-        public static final boolean DEFAULT_VALUE_KEY_SOFT_KEYBOARD_ENABLED = true;
-
-        /**
          * Defines the key for whether the soft keyboard will be enabled only if no hardware keyboard
          * attached, for cases where users want to use a hardware keyboard instead.
          */
@@ -148,25 +141,6 @@ public final class TermuxPreferenceConstants {
          */
         public static final String KEY_LAST_NOTIFICATION_ID = "last_notification_id";
         public static final int DEFAULT_VALUE_KEY_LAST_NOTIFICATION_ID = 0;
-
-        /**
-         * The {@link ExecutionCommand.Runner#APP_SHELL} number after termux app process since boot.
-         */
-        public static final String KEY_APP_SHELL_NUMBER_SINCE_BOOT = "app_shell_number_since_boot";
-        public static final int DEFAULT_VALUE_APP_SHELL_NUMBER_SINCE_BOOT = 0;
-
-        /**
-         * The {@link ExecutionCommand.Runner#TERMINAL_SESSION} number after termux app process since boot.
-         */
-        public static final String KEY_TERMINAL_SESSION_NUMBER_SINCE_BOOT = "terminal_session_number_since_boot";
-        public static final int DEFAULT_VALUE_TERMINAL_SESSION_NUMBER_SINCE_BOOT = 0;
-
-
-        /**
-         * Defines the key for whether termux terminal view key logging is enabled or not
-         */
-        public static final String KEY_TERMINAL_VIEW_KEY_LOGGING_ENABLED = "terminal_view_key_logging_enabled";
-        public static final boolean DEFAULT_VALUE_TERMINAL_VIEW_KEY_LOGGING_ENABLED = false;
 
         /**
          * Defines the key for whether flashes and notifications for plugin errors are enabled or not.

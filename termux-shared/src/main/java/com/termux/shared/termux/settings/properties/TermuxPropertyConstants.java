@@ -188,16 +188,6 @@ public final class TermuxPropertyConstants {
             .put(VALUE_BELL_BEHAVIOUR_IGNORE, IVALUE_BELL_BEHAVIOUR_IGNORE)
             .build();
 
-
-
-    /** Defines the key for the terminal cursor blink rate */
-    public static final String KEY_TERMINAL_CURSOR_BLINK_RATE =  "terminal-cursor-blink-rate"; // Default: "terminal-cursor-blink-rate"
-    public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MIN = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MIN;
-    public static final int IVALUE_TERMINAL_CURSOR_BLINK_RATE_MAX = TerminalView.TERMINAL_CURSOR_BLINK_RATE_MAX;
-    public static final int DEFAULT_IVALUE_TERMINAL_CURSOR_BLINK_RATE = 0;
-
-
-
     /** Defines the key for the terminal cursor style */
     public static final String KEY_TERMINAL_CURSOR_STYLE =  "terminal-cursor-style"; // Default: "terminal-cursor-style"
 
@@ -294,10 +284,6 @@ public final class TermuxPropertyConstants {
             .put(KEY_SHORTCUT_RENAME_SESSION, ACTION_SHORTCUT_RENAME_SESSION)
             .build();
 
-
-
-
-
     /* String */
 
     /** Defines the key for whether back key will behave as escape key or literal back key */
@@ -352,22 +338,6 @@ public final class TermuxPropertyConstants {
 
 
 
-    /** Defines the key for whether toggle soft keyboard request will show/hide or enable/disable keyboard */
-    public static final String KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =  "soft-keyboard-toggle-behaviour"; // Default: "soft-keyboard-toggle-behaviour"
-
-    public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE = "show/hide";
-    public static final String IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE = "enable/disable";
-    public static final String DEFAULT_IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR = IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE;
-
-    /** Defines the bidirectional map for toggle soft keyboard behaviour values and their internal values */
-    public static final ImmutableBiMap<String, String> MAP_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR =
-        new ImmutableBiMap.Builder<String, String>()
-            .put(IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE, IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_SHOW_HIDE)
-            .put(IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE, IVALUE_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR_ENABLE_DISABLE)
-            .build();
-
-
-
     /** Defines the key for whether volume keys will behave as virtual or literal volume keys */
     public static final String KEY_VOLUME_KEYS_BEHAVIOUR =  "volume-keys"; // Default: "volume-keys"
 
@@ -408,7 +378,6 @@ public final class TermuxPropertyConstants {
         /* int */
         KEY_BELL_BEHAVIOUR,
         KEY_DELETE_TMPDIR_FILES_OLDER_THAN_X_DAYS_ON_EXIT,
-        KEY_TERMINAL_CURSOR_BLINK_RATE,
         KEY_TERMINAL_CURSOR_STYLE,
         KEY_TERMINAL_MARGIN_HORIZONTAL,
         KEY_TERMINAL_MARGIN_VERTICAL,
@@ -429,7 +398,6 @@ public final class TermuxPropertyConstants {
         KEY_EXTRA_KEYS,
         KEY_EXTRA_KEYS_STYLE,
         KEY_NIGHT_MODE,
-        KEY_SOFT_KEYBOARD_TOGGLE_BEHAVIOUR,
         KEY_VOLUME_KEYS_BEHAVIOUR
     ));
 
@@ -460,22 +428,6 @@ public final class TermuxPropertyConstants {
     public static final Set<String> TERMUX_DEFAULT_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
         KEY_EXTRA_KEYS_TEXT_ALL_CAPS,
         KEY_RUN_TERMUX_AM_SOCKET_SERVER
-    ));
-
-    /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with false as default.
-     * "false" -> true
-     * "true" -> false
-     * default: false
-     */
-    public static final Set<String> TERMUX_DEFAULT_INVERETED_FALSE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
-    ));
-
-    /** Defines the set for keys loaded by termux that have default inverted boolean behaviour with true as default.
-     * "false" -> true
-     * "true" -> false
-     * default: true
-     */
-    public static final Set<String> TERMUX_DEFAULT_INVERETED_TRUE_BOOLEAN_BEHAVIOUR_PROPERTIES_LIST = new HashSet<>(Arrays.asList(
     ));
 
 }

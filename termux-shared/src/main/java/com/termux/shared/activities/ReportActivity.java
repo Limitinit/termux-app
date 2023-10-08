@@ -60,7 +60,7 @@ public class ReportActivity extends AppCompatActivity {
 
     public static final int REQUEST_GRANT_STORAGE_PERMISSION_FOR_SAVE_FILE = 1000;
 
-    public static final int ACTIVITY_TEXT_SIZE_LIMIT_IN_BYTES = 1000 * 1024; // 1MB
+    public static final int ACTIVITY_TEXT_SIZE_LIMIT_IN_BYTES = 10 * 1000 * 1024; // 10MB
 
     private ReportInfo mReportInfo;
     private String mReportInfoFilePath;
@@ -193,13 +193,6 @@ public class ReportActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(final Menu menu) {
         final MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_report, menu);
-
-        if (mReportInfo.reportSaveFilePath == null) {
-            MenuItem item = menu.findItem(R.id.menu_item_save_report_to_file);
-            if (item != null)
-                item.setEnabled(false);
-        }
-
         return true;
     }
 
@@ -216,28 +209,9 @@ public class ReportActivity extends AppCompatActivity {
             ShareUtils.shareText(this, getString(R.string.title_report_text), ReportInfo.getReportInfoMarkdownString(mReportInfo));
         } else if (id == R.id.menu_item_copy_report) {
             ShareUtils.copyTextToClipboard(this, ReportInfo.getReportInfoMarkdownString(mReportInfo), null);
-        } else if (id == R.id.menu_item_save_report_to_file) {
-            ShareUtils.saveTextToFile(this, mReportInfo.reportSaveFileLabel,
-                mReportInfo.reportSaveFilePath, ReportInfo.getReportInfoMarkdownString(mReportInfo),
-                true, REQUEST_GRANT_STORAGE_PERMISSION_FOR_SAVE_FILE);
         }
 
         return false;
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Logger.logInfo(LOG_TAG, "Storage permission granted by user on request.");
-            if (requestCode == REQUEST_GRANT_STORAGE_PERMISSION_FOR_SAVE_FILE) {
-                ShareUtils.saveTextToFile(this, mReportInfo.reportSaveFileLabel,
-                    mReportInfo.reportSaveFilePath, ReportInfo.getReportInfoMarkdownString(mReportInfo),
-                    true, -1);
-            }
-        } else {
-            Logger.logInfo(LOG_TAG, "Storage permission denied by user on request.");
-        }
     }
 
     /**
@@ -410,44 +384,6 @@ public class ReportActivity extends AppCompatActivity {
             Logger.logError(LOG_TAG, "Not deleting " + ReportInfo.class.getSimpleName() + " serialized object file at path \"" + reportInfoFilePath + "\" since its not under \"" + reportInfoDirectoryPath + "\"");
         }
     }
-
-    /**
-     * Delete {@link ReportInfo} serialized object files from cache older than x days. If a notification
-     * has still not been opened after x days that's using a PendingIntent to ReportActivity, then
-     * opening the notification will throw a file not found error, so choose days value appropriately
-     * or check if a notification is still active if tracking notification ids.
-     * The {@link Context} object passed must be of the same package with which {@link #newInstance(Context, ReportInfo)}
-     * was called since a call to {@link Context#getCacheDir()} is made.
-     *
-     * @param context The {@link Context} for operations.
-     * @param days The x amount of days before which files should be deleted. This must be `>=0`.
-     * @param isSynchronous If set to {@code true}, then the command will be executed in the
-     *                      caller thread and results returned synchronously.
-     *                      If set to {@code false}, then a new thread is started run the commands
-     *                      asynchronously in the background and control is returned to the caller thread.
-     * @return Returns the {@code error} if deleting was not successful, otherwise {@code null}.
-     */
-    public static Error deleteReportInfoFilesOlderThanXDays(@NonNull final Context context, int days, final boolean isSynchronous) {
-        if (isSynchronous) {
-            return deleteReportInfoFilesOlderThanXDaysInner(context, days);
-        } else {
-            new Thread() { public void run() {
-                Error error = deleteReportInfoFilesOlderThanXDaysInner(context, days);
-                if (error != null) {
-                    Logger.logErrorExtended(LOG_TAG, error.toString());
-                }
-            }}.start();
-            return null;
-        }
-    }
-
-    private static Error deleteReportInfoFilesOlderThanXDaysInner(@NonNull final Context context, int days) {
-        // Only regular files are deleted and subdirectories are not checked
-        String reportInfoDirectoryPath = getReportInfoDirectoryPath(context);
-        Logger.logVerbose(LOG_TAG, "Deleting " + ReportInfo.class.getSimpleName() + " serialized object files under directory path \"" + reportInfoDirectoryPath + "\" older than " + days + " days");
-        return FileUtils.deleteFilesOlderThanXDays(ReportInfo.class.getSimpleName(), reportInfoDirectoryPath, null, days, true, FileType.REGULAR.getValue());
-    }
-
 
     /**
      * The {@link BroadcastReceiver} for {@link ReportActivity} that currently does cleanup when

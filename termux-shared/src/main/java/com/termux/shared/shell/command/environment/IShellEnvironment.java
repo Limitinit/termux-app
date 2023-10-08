@@ -12,15 +12,6 @@ import java.util.HashMap;
 public interface IShellEnvironment {
 
     /**
-     * Get the default working directory path for the environment in case the path that was passed
-     * was {@code null} or empty.
-     *
-     * @return Should return the default working directory path.
-     */
-    @NonNull
-    String getDefaultWorkingDirectoryPath();
-
-    /**
      * Get the default "/bin" path, like $PREFIX/bin.
      *
      * @return Should return the "/bin" path.

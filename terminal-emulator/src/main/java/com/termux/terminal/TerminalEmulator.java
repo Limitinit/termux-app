@@ -1,6 +1,7 @@
 package com.termux.terminal;
 
 import android.util.Base64;
+import android.util.Log;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -831,7 +832,7 @@ public final class TerminalEmulator {
                                 if (internalBit != -1) {
                                     value = isDecsetInternalBitSet(internalBit) ? 1 : 2; // 1=set, 2=reset.
                                 } else {
-                                    Logger.logError(mClient, LOG_TAG, "Got DECRQM for unrecognized private DEC mode=" + mode);
+                                    Log.e(LOG_TAG, "Got DECRQM for unrecognized private DEC mode=" + mode);
                                     value = 0; // 0=not recognized, 3=permanently set, 4=permanently reset
                                 }
                             }
@@ -975,7 +976,7 @@ public final class TerminalEmulator {
                                     case "&8": // Undo key - ignore.
                                         break;
                                     default:
-                                        Logger.logWarn(mClient, LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
+                                        Log.w( LOG_TAG, "Unhandled termcap/terminfo name: '" + trans + "'");
                                 }
                                 // Respond with invalid request:
                                 mSession.write("\033P0+r" + part + "\033\\");
@@ -987,12 +988,12 @@ public final class TerminalEmulator {
                                 mSession.write("\033P1+r" + part + "=" + hexEncoded + "\033\\");
                             }
                         } else {
-                            Logger.logError(mClient, LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
+                            Log.e(LOG_TAG, "Invalid device termcap/terminfo name of odd length: " + part);
                         }
                     }
                 } else {
                     if (LOG_ESCAPE_SEQUENCES)
-                        Logger.logError(mClient, LOG_TAG, "Unrecognized device control string: " + dcs);
+                        Log.e(LOG_TAG, "Unrecognized device control string: " + dcs);
                 }
                 finishSequence();
             }
@@ -1082,7 +1083,7 @@ public final class TerminalEmulator {
                     int externalBit = mArgs[i];
                     int internalBit = mapDecSetBitToInternalBit(externalBit);
                     if (internalBit == -1) {
-                        Logger.logWarn(mClient, LOG_TAG, "Ignoring request to save/recall decset bit=" + externalBit);
+                        Log.w( LOG_TAG, "Ignoring request to save/recall decset bit=" + externalBit);
                     } else {
                         if (b == 's') {
                             mSavedDecSetFlags |= internalBit;
@@ -1272,7 +1273,7 @@ public final class TerminalEmulator {
                 // (1) enables this feature for keys except for those with well-known behavior, e.g., Tab, Backarrow and
                 // some special control character cases, e.g., Control-Space to make a NUL.
                 // (2) enables this feature for keys including the exceptions listed.
-                Logger.logError(mClient, LOG_TAG, "(ignored) CSI > MODIFY RESOURCE: " + getArg0(-1) + " to " + getArg1(-1));
+                Log.e(LOG_TAG, "(ignored) CSI > MODIFY RESOURCE: " + getArg0(-1) + " to " + getArg1(-1));
                 break;
             default:
                 parseArg(b);
@@ -1821,7 +1822,7 @@ public final class TerminalEmulator {
                 int firstArg = mArgs[i + 1];
                 if (firstArg == 2) {
                     if (i + 4 > mArgIndex) {
-                        Logger.logWarn(mClient, LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
+                        Log.w( LOG_TAG, "Too few CSI" + code + ";2 RGB arguments");
                     } else {
                         int red = mArgs[i + 2], green = mArgs[i + 3], blue = mArgs[i + 4];
                         if (red < 0 || green < 0 || blue < 0 || red > 255 || green > 255 || blue > 255) {
@@ -1846,7 +1847,7 @@ public final class TerminalEmulator {
                             mBackColor = color;
                         }
                     } else {
-                        if (LOG_ESCAPE_SEQUENCES) Logger.logWarn(mClient, LOG_TAG, "Invalid color index: " + color);
+                        if (LOG_ESCAPE_SEQUENCES) Log.w( LOG_TAG, "Invalid color index: " + color);
                     }
                 } else {
                     finishSequenceAndLogError("Invalid ISO-8613-3 SGR first argument: " + firstArg);
@@ -1863,7 +1864,7 @@ public final class TerminalEmulator {
                 mBackColor = code - 100 + 8;
             } else {
                 if (LOG_ESCAPE_SEQUENCES)
-                    Logger.logWarn(mClient, LOG_TAG, String.format("SGR unknown code %d", code));
+                    Log.w( LOG_TAG, String.format("SGR unknown code %d", code));
             }
         }
     }
@@ -1997,7 +1998,7 @@ public final class TerminalEmulator {
                     String clipboardText = new String(Base64.decode(textParameter.substring(startIndex), 0), StandardCharsets.UTF_8);
                     mSession.onCopyTextToClipboard(clipboardText);
                 } catch (Exception e) {
-                    Logger.logError(mClient, LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "");
+                    Log.e(LOG_TAG, "OSC Manipulate selection, invalid string '" + textParameter + "");
                 }
                 break;
             case 104:
@@ -2222,7 +2223,7 @@ public final class TerminalEmulator {
     }
 
     private void finishSequenceAndLogError(String error) {
-        if (LOG_ESCAPE_SEQUENCES) Logger.logWarn(mClient, LOG_TAG, error);
+        if (LOG_ESCAPE_SEQUENCES) Log.w( LOG_TAG, error);
         finishSequence();
     }
 

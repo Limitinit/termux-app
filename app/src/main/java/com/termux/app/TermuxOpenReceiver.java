@@ -11,11 +11,11 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 import com.termux.shared.data.DataUtils;
-import com.termux.shared.data.IntentUtils;
 import com.termux.shared.net.uri.UriUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.net.uri.UriScheme;
@@ -35,12 +35,11 @@ public class TermuxOpenReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         final Uri data = intent.getData();
         if (data == null) {
-            Logger.logError(LOG_TAG, "Called without intent data");
+            Log.e(LOG_TAG, "Called without intent data");
             return;
         }
 
-        Logger.logVerbose(LOG_TAG, "Intent Received:\n" + IntentUtils.getIntentString(intent));
-        Logger.logVerbose(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\"");
+        Log.v(LOG_TAG, "uri: \"" + data + "\", path: \"" + data.getPath() + "\", fragment: \"" + data.getFragment() + "\"");
 
         final String contentTypeExtra = intent.getStringExtra("content-type");
         final boolean useChooser = intent.getBooleanExtra("chooser", false);

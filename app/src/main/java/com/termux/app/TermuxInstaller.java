@@ -4,24 +4,24 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.Build;
+import android.content.pm.ApplicationInfo;
 import android.os.Environment;
+import android.os.UserHandle;
+import android.os.UserManager;
+import android.system.ErrnoException;
 import android.system.Os;
+import android.util.Log;
 import android.util.Pair;
 import android.view.WindowManager;
 
 import com.termux.R;
 import com.termux.shared.file.FileUtils;
-import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.file.TermuxFileUtils;
 import com.termux.shared.interact.MessageDialogUtils;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.markdown.MarkdownUtils;
 import com.termux.shared.errors.Error;
-import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.TermuxUtils;
-import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -73,12 +73,13 @@ final class TermuxInstaller {
 
         // Termux can only be run as the primary user (device owner) since only that
         // account has the expected file system paths. Verify that:
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !PackageUtils.isCurrentUserThePrimaryUser(activity)) {
+        UserManager userManager = (UserManager) activity.getSystemService(Context.USER_SERVICE);
+        boolean isCurrentUserPrimary = userManager.getSerialNumberForUser(UserHandle.getUserHandleForUid(activity.getApplicationInfo().uid)) == 0;
+        if (!isCurrentUserPrimary) {
             bootstrapErrorMessage = activity.getString(R.string.bootstrap_error_not_primary_user_message,
                 MarkdownUtils.getMarkdownCodeForString(TERMUX_PREFIX_DIR_PATH, false));
-            Logger.logError(LOG_TAG, "isFilesDirectoryAccessible: " + isFilesDirectoryAccessible);
-            Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
+            Log.e(LOG_TAG, "isFilesDirectoryAccessible: " + isFilesDirectoryAccessible);
+            Log.e(LOG_TAG, bootstrapErrorMessage);
             MessageDialogUtils.exitAppWithErrorMessage(activity,
                 activity.getString(R.string.bootstrap_error_title),
                 bootstrapErrorMessage);
@@ -86,32 +87,26 @@ final class TermuxInstaller {
         }
 
         if (!isFilesDirectoryAccessible) {
-            bootstrapErrorMessage = Error.getMinimalErrorString(filesDirectoryAccessibleError);
-            //noinspection SdCardPath
-            if (PackageUtils.isAppInstalledOnExternalStorage(activity) &&
+            boolean isInstalledOnExternalStorage = (activity.getApplicationInfo().flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE) != 0;
+            if (isInstalledOnExternalStorage &&
                 !TermuxConstants.TERMUX_FILES_DIR_PATH.equals(activity.getFilesDir().getAbsolutePath().replaceAll("^/data/user/0/", "/data/data/"))) {
-                bootstrapErrorMessage += "\n\n" + activity.getString(R.string.bootstrap_error_installed_on_portable_sd,
-                    MarkdownUtils.getMarkdownCodeForString(TERMUX_PREFIX_DIR_PATH, false));
+                new AlertDialog.Builder(activity)
+                    .setTitle("Termux cannot be installed on external storage")
+                    .show();
+                return;
             }
-
-            Logger.logError(LOG_TAG, bootstrapErrorMessage);
-            sendBootstrapCrashReportNotification(activity, bootstrapErrorMessage);
-            MessageDialogUtils.showMessage(activity,
-                activity.getString(R.string.bootstrap_error_title),
-                bootstrapErrorMessage, null);
-            return;
         }
 
         // If prefix directory exists, even if its a symlink to a valid directory and symlink is not broken/dangling
         if (FileUtils.directoryFileExists(TERMUX_PREFIX_DIR_PATH, true)) {
             if (TermuxFileUtils.isTermuxPrefixDirectoryEmpty()) {
-                Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" exists but is empty or only contains specific unimportant files.");
+                Log.i(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" exists but is empty or only contains specific unimportant files.");
             } else {
                 whenDone.run();
                 return;
             }
         } else if (FileUtils.fileExists(TERMUX_PREFIX_DIR_PATH, false)) {
-            Logger.logInfo(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" does not exist but another file exists at its destination.");
+            Log.i(LOG_TAG, "The termux prefix directory \"" + TERMUX_PREFIX_DIR_PATH + "\" does not exist but another file exists at its destination.");
         }
 
         final ProgressDialog progress = ProgressDialog.show(activity, null, activity.getString(R.string.bootstrap_installer_body), true, false);
@@ -119,7 +114,7 @@ final class TermuxInstaller {
             @Override
             public void run() {
                 try {
-                    Logger.logInfo(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
+                    Log.i(LOG_TAG, "Installing " + TermuxConstants.TERMUX_APP_NAME + " bootstrap packages.");
 
                     Error error;
 
@@ -151,7 +146,7 @@ final class TermuxInstaller {
                         return;
                     }
 
-                    Logger.logInfo(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + TERMUX_STAGING_PREFIX_DIR_PATH + "\".");
+                    Log.i(LOG_TAG, "Extracting bootstrap zip to prefix staging directory \"" + TERMUX_STAGING_PREFIX_DIR_PATH + "\".");
 
                     final byte[] buffer = new byte[8096];
                     final List<Pair<String, String>> symlinks = new ArrayList<>(50);
@@ -210,22 +205,13 @@ final class TermuxInstaller {
                         Os.symlink(symlink.first, symlink.second);
                     }
 
-                    Logger.logInfo(LOG_TAG, "Moving termux prefix staging to prefix directory.");
-
                     if (!TERMUX_STAGING_PREFIX_DIR.renameTo(TERMUX_PREFIX_DIR)) {
                         throw new RuntimeException("Moving termux prefix staging to prefix directory failed");
                     }
 
-                    Logger.logInfo(LOG_TAG, "Bootstrap packages installed successfully.");
-
-                    // Recreate env file since termux prefix was wiped earlier
-                    TermuxShellEnvironment.writeEnvironmentToFile(activity);
-
                     activity.runOnUiThread(whenDone);
-
                 } catch (final Exception e) {
                     showBootstrapErrorDialog(activity, whenDone, Logger.getStackTracesMarkdownString(null, Logger.getStackTracesStringArray(e)));
-
                 } finally {
                     activity.runOnUiThread(() -> {
                         try {
@@ -240,10 +226,7 @@ final class TermuxInstaller {
     }
 
     public static void showBootstrapErrorDialog(Activity activity, Runnable whenDone, String message) {
-        Logger.logErrorExtended(LOG_TAG, "Bootstrap Error:\n" + message);
-
-        // Send a notification with the exception so that the user knows why bootstrap setup failed
-        sendBootstrapCrashReportNotification(activity, message);
+        Log.e(LOG_TAG, "Bootstrap Error: " + message);
 
         activity.runOnUiThread(() -> {
             try {
@@ -263,22 +246,8 @@ final class TermuxInstaller {
         });
     }
 
-    private static void sendBootstrapCrashReportNotification(Activity activity, String message) {
-        final String title = TermuxConstants.TERMUX_APP_NAME + " Bootstrap Error";
-
-        // Add info of all install Termux plugin apps as well since their target sdk or installation
-        // on external/portable sd card can affect Termux app files directory access or exec.
-        TermuxCrashUtils.sendCrashReportNotification(activity, LOG_TAG,
-            title, null, "## " + title + "\n\n" + message + "\n\n" +
-                TermuxUtils.getTermuxDebugMarkdownString(activity),
-            true, false, TermuxUtils.AppInfoMode.TERMUX_AND_PLUGIN_PACKAGES, true);
-    }
-
     static void setupStorageSymlinks(final Context context) {
-        final String LOG_TAG = "termux-storage";
-        final String title = TermuxConstants.TERMUX_APP_NAME + " Setup Storage Error";
-
-        Logger.logInfo(LOG_TAG, "Setting up storage symlinks.");
+        Log.i(LOG_TAG, "Setting up storage symlinks.");
 
         new Thread() {
             public void run() {
@@ -288,15 +257,10 @@ final class TermuxInstaller {
 
                     error = FileUtils.clearDirectory("~/storage", storageDir.getAbsolutePath());
                     if (error != null) {
-                        Logger.logErrorAndShowToast(context, LOG_TAG, error.getMessage());
-                        Logger.logErrorExtended(LOG_TAG, "Setup Storage Error\n" + error.toString());
-                        TermuxCrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
-                            "## " + title + "\n\n" + Error.getErrorMarkdownString(error),
-                            true, false, TermuxUtils.AppInfoMode.TERMUX_PACKAGE, true);
-                        return;
+                        throw new RuntimeException("Unable to clear ~/storage: " + error);
                     }
 
-                    Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
+                    Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/shared, ~/storage/downloads, ~/storage/dcim, ~/storage/pictures, ~/storage/music and ~/storage/movies for directories in \"" + Environment.getExternalStorageDirectory().getAbsolutePath() + "\".");
 
                     // Get primary storage root "/storage/emulated/0" symlink
                     File sharedDir = Environment.getExternalStorageDirectory();
@@ -342,7 +306,7 @@ final class TermuxInstaller {
                             File dir = dirs[i];
                             if (dir == null) continue;
                             String symlinkName = "external-" + i;
-                            Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
+                            Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
                             Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
                         }
                     }
@@ -354,18 +318,14 @@ final class TermuxInstaller {
                             File dir = dirs[i];
                             if (dir == null) continue;
                             String symlinkName = "media-" + i;
-                            Logger.logInfo(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
+                            Log.i(LOG_TAG, "Setting up storage symlinks at ~/storage/" + symlinkName + " for \"" + dir.getAbsolutePath() + "\".");
                             Os.symlink(dir.getAbsolutePath(), new File(storageDir, symlinkName).getAbsolutePath());
                         }
                     }
 
-                    Logger.logInfo(LOG_TAG, "Storage symlinks created successfully.");
-                } catch (Exception e) {
-                    Logger.logErrorAndShowToast(context, LOG_TAG, e.getMessage());
-                    Logger.logStackTraceWithMessage(LOG_TAG, "Setup Storage Error: Error setting up link", e);
-                    TermuxCrashUtils.sendCrashReportNotification(context, LOG_TAG, title, null,
-                        "## " + title + "\n\n" + Logger.getStackTracesMarkdownString(null, Logger.getStackTracesStringArray(e)),
-                        true, false, TermuxUtils.AppInfoMode.TERMUX_PACKAGE, true);
+                    Log.i(LOG_TAG, "Storage symlinks created successfully.");
+                } catch (ErrnoException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }.start();

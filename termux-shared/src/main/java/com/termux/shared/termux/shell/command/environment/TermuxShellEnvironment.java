@@ -7,14 +7,13 @@ import androidx.annotation.NonNull;
 import com.termux.shared.errors.Error;
 import com.termux.shared.file.FileUtils;
 import com.termux.shared.logger.Logger;
-import com.termux.shared.shell.command.ExecutionCommand;
 import com.termux.shared.shell.command.environment.AndroidShellEnvironment;
-import com.termux.shared.shell.command.environment.ShellEnvironmentUtils;
 import com.termux.shared.shell.command.environment.ShellCommandShellEnvironment;
-import com.termux.shared.termux.TermuxBootstrap;
+import com.termux.shared.shell.command.environment.ShellEnvironmentUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.shell.TermuxShellUtils;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 
@@ -30,7 +29,7 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
 
     public TermuxShellEnvironment() {
         super();
-        shellCommandShellEnvironment = new TermuxShellCommandShellEnvironment();
+        shellCommandShellEnvironment = new ShellCommandShellEnvironment();
     }
 
 
@@ -81,25 +80,18 @@ public class TermuxShellEnvironment extends AndroidShellEnvironment {
         // If failsafe is not enabled, then we keep default PATH and TMPDIR so that system binaries can be used
         if (!isFailSafe) {
             environment.put(ENV_TMPDIR, TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
-            if (TermuxBootstrap.isAppPackageVariantAPTAndroid5()) {
-                // Termux in android 5/6 era shipped busybox binaries in applets directory
-                environment.put(ENV_PATH, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/applets");
-                environment.put(ENV_LD_LIBRARY_PATH, TermuxConstants.TERMUX_LIB_PREFIX_DIR_PATH);
-            } else {
-                // Termux binaries on Android 7+ rely on DT_RUNPATH, so LD_LIBRARY_PATH should be unset by default
-                environment.put(ENV_PATH, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
-                environment.remove(ENV_LD_LIBRARY_PATH);
+            // Termux binaries on Android 7+ rely on DT_RUNPATH, so LD_LIBRARY_PATH should be unset by default
+            environment.put(ENV_PATH, TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH);
+            environment.remove(ENV_LD_LIBRARY_PATH);
+
+            File termuxExecLibrary = new File(TermuxConstants.TERMUX_LIB_PREFIX_DIR_PATH + "/libtermux-exec.so");
+            if (termuxExecLibrary.isFile()) {
+                environment.put("LD_PRELOAD", termuxExecLibrary.getAbsolutePath());
+                environment.put("TERMUX_EXEC_DEBUG", "1");
             }
         }
 
         return environment;
-    }
-
-
-    @NonNull
-    @Override
-    public String getDefaultWorkingDirectoryPath() {
-        return TermuxConstants.TERMUX_HOME_DIR_PATH;
     }
 
     @NonNull

@@ -10,8 +10,6 @@ import java.io.Serializable;
  */
 public class ReportInfo implements Serializable {
 
-    /** The user action that was being processed for which the report was generated. */
-    public final String userAction;
     /** The internal app component that sent the report. */
     public final String sender;
     /** The report title. */
@@ -33,10 +31,7 @@ public class ReportInfo implements Serializable {
     /** The label for the report file to save if user selects menu_item_save_report_to_file. */
     public String reportSaveFileLabel;
     /** The path for the report file to save if user selects menu_item_save_report_to_file. */
-    public String reportSaveFilePath;
-
-    public ReportInfo(String userAction, String sender, String reportTitle) {
-        this.userAction = userAction;
+    public ReportInfo(String sender, String reportTitle) {
         this.sender = sender;
         this.reportTitle = reportTitle;
         this.reportTimestamp = AndroidUtils.getCurrentMilliSecondUTCTimeStamp();
@@ -60,15 +55,10 @@ public class ReportInfo implements Serializable {
 
     public void setReportSaveFileLabelAndPath(String reportSaveFileLabel, String reportSaveFilePath) {
         setReportSaveFileLabel(reportSaveFileLabel);
-        setReportSaveFilePath(reportSaveFilePath);
     }
 
     public void setReportSaveFileLabel(String reportSaveFileLabel) {
         this.reportSaveFileLabel = reportSaveFileLabel;
-    }
-
-    public void setReportSaveFilePath(String reportSaveFilePath) {
-        this.reportSaveFilePath = reportSaveFilePath;
     }
 
     /**
@@ -84,7 +74,6 @@ public class ReportInfo implements Serializable {
 
         if (reportInfo.addReportInfoHeaderToMarkdown) {
             markdownString.append("## Report Info\n\n");
-            markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("User Action", reportInfo.userAction, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Sender", reportInfo.sender, "-"));
             markdownString.append("\n").append(MarkdownUtils.getSingleLineMarkdownStringEntry("Report Timestamp", reportInfo.reportTimestamp, "-"));
             markdownString.append("\n##\n\n");

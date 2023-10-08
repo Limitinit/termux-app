@@ -16,7 +16,6 @@ import com.termux.shared.net.socket.local.LocalSocketRunConfig;
 import com.termux.shared.shell.am.AmSocketServerRunConfig;
 import com.termux.shared.shell.am.AmSocketServer;
 import com.termux.shared.termux.TermuxConstants;
-import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.plugins.TermuxPluginUtils;
 import com.termux.shared.termux.settings.properties.TermuxAppSharedProperties;
 import com.termux.shared.termux.settings.properties.TermuxPropertyConstants;
@@ -160,9 +159,9 @@ public class TermuxAmSocketServer {
     public static synchronized void showErrorNotification(@NonNull Context context, @NonNull Error error,
                                                           @NonNull LocalSocketRunConfig localSocketRunConfig,
                                                           @Nullable LocalClientSocket clientSocket) {
-        TermuxPluginUtils.sendPluginCommandErrorNotification(context, LOG_TAG,
-            localSocketRunConfig.getTitle() + " Socket Server Error", error.getMinimalErrorString(),
-            LocalSocketManager.getErrorMarkdownString(error, localSocketRunConfig, clientSocket));
+        //TermuxPluginUtils.sendPluginCommandErrorNotification(context, LOG_TAG,
+            //localSocketRunConfig.getTitle() + " Socket Server Error", error.getMinimalErrorString(),
+            //LocalSocketManager.getErrorMarkdownString(error, localSocketRunConfig, clientSocket));
     }
 
 
@@ -180,22 +179,10 @@ public class TermuxAmSocketServer {
 
     }
 
-
-
-
-
     /** Enhanced implementation for {@link AmSocketServer.AmSocketServerClient} for {@link TermuxAmSocketServer}. */
     public static class TermuxAmSocketServerClient extends AmSocketServer.AmSocketServerClient {
 
         public static final String LOG_TAG = "TermuxAmSocketServerClient";
-
-        @Nullable
-        @Override
-        public Thread.UncaughtExceptionHandler getLocalSocketManagerClientThreadUEH(
-            @NonNull LocalSocketManager localSocketManager) {
-            // Use termux crash handler for socket listener thread just like used for main app process thread.
-            return TermuxCrashUtils.getCrashHandler(localSocketManager.getContext());
-        }
 
         @Override
         public void onError(@NonNull LocalSocketManager localSocketManager,

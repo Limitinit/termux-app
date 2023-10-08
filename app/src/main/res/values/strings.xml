@@ -103,9 +103,6 @@
 
 
     <!-- TermuxService -->
-    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME; requires
-        \"Display over other apps\" permission to start terminal sessions from background on Android >= 10.
-        Grants it from Settings -> Apps -> &TERMUX_APP_NAME; -> Advanced</string>
     <string name="error_termux_service_invalid_execution_command_runner">Invalid execution command runner to TermuxService: `%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_runner">Unsupported execution command runner to TermuxService: `%1$s`</string>
     <string name="error_termux_service_unsupported_execution_command_shell_create_mode">Unsupported execution command shell create mode to TermuxService: `%1$s`</string>
@@ -140,33 +137,6 @@
     <!-- Termux App Preferences -->
     <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
     <string name="termux_preferences_summary">Preferences for &TERMUX_APP_NAME; app</string>
-
-        <!-- Debugging Preferences -->
-        <string name="termux_debugging_preferences_title">Debugging</string>
-        <string name="termux_debugging_preferences_summary">Preferences for debugging</string>
-
-            <!-- Logging Category -->
-            <string name="termux_logging_header">Logging</string>
-
-                <!-- Log Level -->
-                <string name="termux_log_level_title">Log Level</string>
-
-                <!-- Terminal View Key Logging -->
-                <string name="termux_terminal_view_key_logging_enabled_title">Terminal View Key Logging</string>
-                <string name="termux_terminal_view_key_logging_enabled_off">Logs will not have entries for terminal view keys. (Default)</string>
-                <string name="termux_terminal_view_key_logging_enabled_on">Logcat logs will have entries for terminal view keys.
-                    These are very verbose and should be disabled under normal circumstances or will cause performance issues.</string>
-
-                <!-- Plugin Error Notifications -->
-                <string name="termux_plugin_error_notifications_enabled_title">Plugin Error Notifications</string>
-                <string name="termux_plugin_error_notifications_enabled_off">Disable flashes and notifications for plugin errors.</string>
-                <string name="termux_plugin_error_notifications_enabled_on">Show flashes and notifications for plugin errors. (Default)</string>
-
-                <!-- Crash Report Notifications -->
-                <string name="termux_crash_report_notifications_enabled_title">Crash Report Notifications</string>
-                <string name="termux_crash_report_notifications_enabled_off">Disable notifications for crash reports.</string>
-                <string name="termux_crash_report_notifications_enabled_on">Show notifications for crash reports. (Default)</string>
-
 
         <!-- Terminal IO Preferences -->
         <string name="termux_terminal_io_preferences_title">Terminal I/O</string>

@@ -105,16 +105,6 @@ public class TermuxUtils {
     }
 
     /**
-     * Get the {@link Context} for {@link TermuxConstants#TERMUX_STYLING_PACKAGE_NAME} package.
-     *
-     * @param context The {@link Context} to use to get the {@link Context} of the package.
-     * @return Returns the {@link Context}. This will {@code null} if an exception is raised.
-     */
-    public static Context getTermuxStylingPackageContext(@NonNull Context context) {
-        return PackageUtils.getContextForPackage(context, TermuxConstants.TERMUX_STYLING_PACKAGE_NAME);
-    }
-
-    /**
      * Get the {@link Context} for {@link TermuxConstants#TERMUX_TASKER_PACKAGE_NAME} package.
      *
      * @param context The {@link Context} to use to get the {@link Context} of the package.
@@ -271,42 +261,6 @@ public class TermuxUtils {
             return null;
         }
     }
-
-
-
-    /** Returns {@code true} if {@link Uri} has `package:` scheme for {@link TermuxConstants#TERMUX_PACKAGE_NAME} or its sub plugin package. */
-    public static boolean isUriDataForTermuxOrPluginPackage(@NonNull Uri data) {
-        return data.toString().equals("package:" + TermuxConstants.TERMUX_PACKAGE_NAME) ||
-            data.toString().startsWith("package:" + TermuxConstants.TERMUX_PACKAGE_NAME + ".");
-    }
-
-    /** Returns {@code true} if {@link Uri} has `package:` scheme for {@link TermuxConstants#TERMUX_PACKAGE_NAME} sub plugin package. */
-    public static boolean isUriDataForTermuxPluginPackage(@NonNull Uri data) {
-        return data.toString().startsWith("package:" + TermuxConstants.TERMUX_PACKAGE_NAME + ".");
-    }
-
-    /**
-     * Send the {@link TermuxConstants#BROADCAST_TERMUX_OPENED} broadcast to notify apps that Termux
-     * app has been opened.
-     *
-     * @param context The Context to send the broadcast.
-     */
-    public static void sendTermuxOpenedBroadcast(@NonNull Context context) {
-        Intent broadcast = new Intent(TermuxConstants.BROADCAST_TERMUX_OPENED);
-        List<ResolveInfo> matches = context.getPackageManager().queryBroadcastReceivers(broadcast, 0);
-
-        // send broadcast to registered Termux receivers
-        // this technique is needed to work around broadcast changes that Oreo introduced
-        for (ResolveInfo info : matches) {
-            Intent explicitBroadcast = new Intent(broadcast);
-            ComponentName cname = new ComponentName(info.activityInfo.applicationInfo.packageName,
-                info.activityInfo.name);
-            explicitBroadcast.setComponent(cname);
-            context.sendBroadcast(explicitBroadcast);
-        }
-    }
-
-
 
     /**
      * Wrapper for {@link #getAppInfoMarkdownString(Context, AppInfoMode, String)}.
@@ -476,11 +430,6 @@ public class TermuxUtils {
 
         markdownString.append((AndroidUtils.getAppInfoMarkdownString(context)));
 
-        if (context.getPackageName().equals(TermuxConstants.TERMUX_PACKAGE_NAME)) {
-            AndroidUtils.appendPropertyToMarkdown(markdownString, "TERMUX_APP_PACKAGE_MANAGER", TermuxBootstrap.TERMUX_APP_PACKAGE_MANAGER);
-            AndroidUtils.appendPropertyToMarkdown(markdownString, "TERMUX_APP_PACKAGE_VARIANT", TermuxBootstrap.TERMUX_APP_PACKAGE_VARIANT);
-        }
-
         Error error;
         error = TermuxFileUtils.isTermuxFilesDirectoryAccessible(context, true, true);
         if (error != null) {
@@ -523,7 +472,6 @@ public class TermuxUtils {
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_API_APP_NAME, TermuxConstants.TERMUX_API_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_BOOT_APP_NAME, TermuxConstants.TERMUX_BOOT_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_FLOAT_APP_NAME, TermuxConstants.TERMUX_FLOAT_GITHUB_ISSUES_REPO_URL)).append("  ");
-        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_STYLING_APP_NAME, TermuxConstants.TERMUX_STYLING_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_TASKER_APP_NAME, TermuxConstants.TERMUX_TASKER_GITHUB_ISSUES_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_WIDGET_APP_NAME, TermuxConstants.TERMUX_WIDGET_GITHUB_ISSUES_REPO_URL)).append("  ");
 
@@ -553,7 +501,6 @@ public class TermuxUtils {
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_API_APP_NAME, TermuxConstants.TERMUX_API_GITHUB_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_BOOT_APP_NAME, TermuxConstants.TERMUX_BOOT_GITHUB_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_FLOAT_APP_NAME, TermuxConstants.TERMUX_FLOAT_GITHUB_REPO_URL)).append("  ");
-        markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_STYLING_APP_NAME, TermuxConstants.TERMUX_STYLING_GITHUB_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_TASKER_APP_NAME, TermuxConstants.TERMUX_TASKER_GITHUB_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_WIDGET_APP_NAME, TermuxConstants.TERMUX_WIDGET_GITHUB_REPO_URL)).append("  ");
         markdownString.append("\n").append(MarkdownUtils.getLinkMarkdownString(TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_NAME, TermuxConstants.TERMUX_PACKAGES_GITHUB_REPO_URL)).append("  ");

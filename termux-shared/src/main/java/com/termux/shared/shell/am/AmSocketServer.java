@@ -106,16 +106,12 @@ public class AmSocketServer {
 
         String[] amCommandArray = amCommandList.toArray(new String[0]);
 
-        Logger.logDebug(LOG_TAG, "am command received from peer " + clientSocket.getPeerCred().getMinimalString() +
-            "\n" + ExecutionCommand.getArgumentsLogString("am command", amCommandArray));
-
         AmSocketServerRunConfig amSocketServerRunConfig = (AmSocketServerRunConfig) localSocketManager.getLocalSocketRunConfig();
 
         // Run am command and send its result to the client
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
-        error = runAmCommand(localSocketManager.getContext(), amCommandArray, stdout, stderr,
-            amSocketServerRunConfig.shouldCheckDisplayOverAppsPermission());
+        error = runAmCommand(localSocketManager.getContext(), amCommandArray, stdout, stderr);
         if (error != null) {
             sendResultToClient(localSocketManager, clientSocket, 1, stdout.toString(),
                 !stderr.toString().isEmpty() ? stderr + "\n\n" + error : error.toString());
@@ -202,26 +198,15 @@ public class AmSocketServer {
      * @param amCommandArray The am command array.
      * @param stdout The {@link StringBuilder} to set stdout in that is returned by the am command.
      * @param stderr The {@link StringBuilder} to set stderr in that is returned by the am command.
-     * @param checkDisplayOverAppsPermission Check if {@link Manifest.permission#SYSTEM_ALERT_WINDOW}
-     *                                       has been granted if running on Android `>= 10` and
-     *                                       starting activity or service.
      * @return Returns the {@code error} if am command failed, otherwise {@code null}.
      */
     public static Error runAmCommand(@NonNull Context context,
                                      String[] amCommandArray,
-                                     @NonNull StringBuilder stdout, @NonNull StringBuilder stderr,
-                                     boolean checkDisplayOverAppsPermission) {
+                                     @NonNull StringBuilder stdout, @NonNull StringBuilder stderr) {
         try (ByteArrayOutputStream stdoutByteStream = new ByteArrayOutputStream();
              PrintStream stdoutPrintStream = new PrintStream(stdoutByteStream);
              ByteArrayOutputStream stderrByteStream = new ByteArrayOutputStream();
              PrintStream stderrPrintStream = new PrintStream(stderrByteStream)) {
-
-            if (checkDisplayOverAppsPermission && amCommandArray.length >= 1 &&
-                (amCommandArray[0].equals("start") || amCommandArray[0].equals("startservice")) &&
-                !PermissionUtils.validateDisplayOverOtherAppsPermissionForPostAndroid10(context, true)) {
-                throw new IllegalStateException(context.getString(R.string.error_display_over_other_apps_permission_not_granted,
-                    PackageUtils.getAppNameForPackage(context)));
-            }
 
             new Am(stdoutPrintStream, stderrPrintStream, (Application) context.getApplicationContext()).run(amCommandArray);
 

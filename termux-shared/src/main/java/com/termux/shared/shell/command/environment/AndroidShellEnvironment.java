@@ -64,15 +64,6 @@ public class AndroidShellEnvironment extends UnixShellEnvironment {
         return environment;
     }
 
-
-
-    @NonNull
-    @Override
-    public String getDefaultWorkingDirectoryPath() {
-        return "/";
-    }
-
-
     @NonNull
     @Override
     public String getDefaultBinPath() {
@@ -86,9 +77,7 @@ public class AndroidShellEnvironment extends UnixShellEnvironment {
         HashMap<String, String> environment = getEnvironment(currentPackageContext, executionCommand.isFailsafe);
 
         String workingDirectory = executionCommand.workingDirectory;
-        environment.put(ENV_PWD,
-            workingDirectory != null && !workingDirectory.isEmpty() ? new File(workingDirectory).getAbsolutePath() : // PWD must be absolute path
-            getDefaultWorkingDirectoryPath());
+        //environment.put(ENV_PWD, workingDirectory != null && !workingDirectory.isEmpty() ? new File(workingDirectory).getAbsolutePath() : // PWD must be absolute path getDefaultWorkingDirectoryPath());
         ShellEnvironmentUtils.createHomeDir(environment);
 
         if (executionCommand.setShellCommandShellEnvironment && shellCommandShellEnvironment != null)
